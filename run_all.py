@@ -8,7 +8,7 @@ Stages that are not built yet are skipped with a message.
 
 import argparse
 
-from src import s1_ingest
+from src import s1_ingest, s2_integrate
 from src.utils import log, stage
 
 # Update this after a full timed run (course requirement: show an estimate).
@@ -25,8 +25,11 @@ def main() -> None:
     with stage("Stage 1: load crash data"):
         s1_ingest.run()
 
-    # Stages 2-5 (weather join, features, training, evaluation) plug in here.
-    log("Stages 2-5 are not built yet.")
+    with stage("Stage 2: join hourly weather"):
+        s2_integrate.run()
+
+    # Stages 3-5 (features, training, evaluation) plug in here.
+    log("Stages 3-5 are not built yet.")
     log("Pipeline completed.")
 
 

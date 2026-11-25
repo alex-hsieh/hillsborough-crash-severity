@@ -20,6 +20,15 @@ CRASH_RAW_PATTERN = "fdot_crashes_hillsborough_{year}.json"
 CRASH_METADATA_FILE = "fdot_crashes_layer_metadata.json"
 CRASHES_CLEAN = DATA_INTERIM / "crashes_clean.parquet"
 
+# --- Weather (decision D5) ---------------------------------------------------
+# NOAA GHCNh hourly, public AWS bucket (no login, no bot check).
+WEATHER_STATION = "USW00012842"   # Tampa International Airport (27.9633, -82.5400)
+WEATHER_URL = ("https://noaa-ghcnh-pds.s3.amazonaws.com/hourly/access/by-year/"
+               "{year}/parquet/GHCNh_{station}_{year}.parquet")
+WEATHER_RAW_PATTERN = "ghcnh_{station}_{year}.parquet"
+WEATHER_HOURLY = DATA_INTERIM / "weather_hourly.parquet"
+CRASHES_JOINED = DATA_INTERIM / "crashes_joined.parquet"
+
 # --- Study scope (KNOWLEDGE.md decisions D1 and D3) --------------------------
 YEARS = [2014, 2015, 2016, 2017, 2018]
 TRAIN_YEARS = [2014, 2015, 2016, 2017]

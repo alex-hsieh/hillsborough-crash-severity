@@ -1,0 +1,15 @@
+period,offset_hours,crashes,pct_with_noaa_rain
+daylight time,-3,9679,23.8
+daylight time,-2,9679,29.9
+daylight time,-1,9679,39.1
+daylight time,0,9679,50.8
+daylight time,1,9679,49.4
+daylight time,2,9679,37.8
+daylight time,3,9679,28.3
+standard time,-3,3806,39.0
+standard time,-2,3806,47.2
+standard time,-1,3806,54.1
+standard time,0,3806,63.2
+standard time,1,3806,60.6
+standard time,2,3806,50.3
+standard time,3,3806,43.2

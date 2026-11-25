@@ -55,8 +55,8 @@ Alex writes section 4 (implementation) from the log in section 11. **Anyone** wh
 | D2 | 3-class label, not binary | Fatal crashes are too rare to model alone, so they're merged with incapacitating | Oct 9 |
 | D3 | Train 2014–2017, test 2018 exactly once | Time-based split, so no future data leaks into training | Oct 9 |
 | D4 | **Traffic = `AVERAGE_DAILY_TRAFFIC` field from the crash record.** No hourly traffic counts | The hourly bulk download was never confirmed; this field needs no download or join | Nov 24 |
-| D5 | **Weather = Tampa International Airport station only.** Add more stations only if time allows | One station keeps the join simple; still needs a check for 2014–2018 coverage | Nov 24 |
-| D6 | **Revised Nov 24 after checking the real data.** `CRASH_DATE` is stored as midnight in fixed EST (always 05:00 UTC, all year), so shift it by −5 h to get the calendar date. `CRASH_TIME` ("HHMM") is the officer's local wall-clock time, which **does** follow daylight saving. Date + time = local time, converted to UTC with `America/New_York`. Repeated 1 am in November = daylight occurrence; skipped 2 am in March = shifted forward | The Oct 9 "fixed EST" finding is true of the date field only. Applying a fixed −5 h to the clock time would shift every summer crash by an hour. To be confirmed with the weather join (rain reports should line up with NOAA rain hours) | Nov 24 (replaces the Oct 9 version) |
+| D5 | **Weather = Tampa International Airport station only** (GHCNh `USW00012842`). Add more stations only if time allows | One station keeps the join simple. Confirmed: 2014–2018 coverage is complete, and 99.9–100% of crashes get a weather match | Nov 24 |
+| D6 | **Revised Nov 24 after checking the real data.** `CRASH_DATE` is stored as midnight in fixed EST (always 05:00 UTC, all year), so shift it by −5 h to get the calendar date. `CRASH_TIME` ("HHMM") is the officer's local wall-clock time, which **does** follow daylight saving. Date + time = local time, converted to UTC with `America/New_York`. Repeated 1 am in November = daylight occurrence; skipped 2 am in March = shifted forward | The Oct 9 "fixed EST" finding is true of the date field only. Applying a fixed −5 h to the clock time would shift every summer crash by an hour. **Confirmed by the weather join:** for officer-reported rain crashes, NOAA rain matches best at offset 0 in both daylight and standard time (`outputs/tables/timezone_check.csv`) | Nov 24 (replaces the Oct 9 version) |
 | D7 | Stretch goals (weather vs. traffic volume; unusual-volume detection) only if core results freeze by Nov 29 | Not enough time otherwise | Nov 16 |
 | D8 | Libraries limited to pandas, numpy, scikit-learn, pyarrow, requests, matplotlib | Every extra library is one more thing the instructor must install | Nov 16 |
 | D9 | **Crash data is downloaded once from a browser** with `tools/fdot_browser_download.js`, then read from `data/raw/` | gis.fdot.gov now blocks scripts (Python, curl) with a bot check. The county's public copy lacks crash times and speed limits | Nov 24 |
@@ -92,8 +92,11 @@ Alex writes section 4 (implementation) from the log in section 11. **Anyone** wh
 - **Bulk access:** AWS `s3://noaa-ghcnh-pds` (no credentials), PSV or parquet, one file per station per year
 - **Station list:** [ghcnh-station-list.txt](https://www.ncei.noaa.gov/oa/global-historical-climatology-network/hourly/doc/ghcnh-station-list.txt)
 - **Docs:** [ghcnh_DOCUMENTATION.pdf](https://www.ncei.noaa.gov/oa/global-historical-climatology-network/hourly/doc/ghcnh_DOCUMENTATION.pdf)
-- **Known:** visibility is in km
-- **TODO (Alex):** confirm the Tampa International station ID, the exact column names, that timestamps are UTC, and coverage for 2014–2018
+- **Station:** Tampa International Airport, `USW00012842` (27.9633, −82.5400)
+- **Files used:** `hourly/access/by-year/<year>/parquet/GHCNh_USW00012842_<year>.parquet` (~1.2 MB/year). Stage 2 downloads them automatically if missing
+- **Columns used:** `DATE` (UTC), `temperature` (°C), `precipitation` (mm over the last hour), `visibility` (km), `wind_speed` (m/s), `relative_humidity` (%)
+- **Report types:** routine hourly report at about :53 (`FM15`) plus special reports (`FM16`). Each report is assigned to its nearest whole hour, and the routine one wins
+- **Officer weather codes** (`EVNT_WTHR_COND_CD`): 01 clear, 02 cloudy, 03 rain (~10% of crashes), 04 fog. Road surface (`RD_SRFC_COND_CD`): 01 dry, 02 wet
 
 ### Traffic count sites (FDOT), not used, see D4
 
@@ -221,6 +224,8 @@ outputs/
 | Oct 9 | Team | Fatal crashes too rare to model alone | Merged with incapacitating into "severe" (D2) |
 | Nov 24 | Alex | Hourly traffic bulk download never confirmed | Use `AVERAGE_DAILY_TRAFFIC` from the crash record (D4) |
 | Nov 24 | Alex | Downloaded data: 2014 24,621 / 2015 27,914 / 2016 30,457 / 2017 29,758 crashes. 2017 exactly matches the Oct 9 check (56.6% / 39.2% / 4.2%) | Download and label mapping confirmed correct |
+| Nov 24 | Alex | 2018 has 26,812 crashes, ~10% fewer than 2017, spread evenly across all 12 months (no missing month). After cleaning, 2014–2018 = 139,357 crashes, 137,393 with a usable label | Accept as is; note in the report |
+| Nov 24 | Alex | Weather join: 99.9–100% match rate. Irma (Sept 10–11, 2017): 71 crashes, mean wind 8.6 m/s, up to 11.4 mm rain/hour | Join works |
 | Nov 24 | Alex | 197 crashes appear twice with the same crash ID (`XID`) but different OBJECTIDs | Keep the first copy per `XID` |
 | Nov 24 | Alex | 1,596 crashes (1.4%) have `INJSEVER` 0 (unknown) or 6 (non-traffic) | Dropped from modeling, as planned |
 | Nov 24 | Alex | Speed limit, functional class, lanes, median and surface width, urban/rural and ADT are 46–54% missing. They come from FDOT's roadway inventory, which covers state-maintained roads only: ADT is 1–6% missing on interstate/US/state roads, but 61–88% missing on county and local roads | Keep them with gradient boosting's native missing handling; add road system (`DHSRDSYS`, always filled) as a feature; state this limitation in the report |
