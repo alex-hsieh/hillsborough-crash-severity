@@ -31,16 +31,17 @@ We predict how severe a traffic crash is in Hillsborough County, FL, using FDOT 
 
 ## 3. Team and ownership
 
-> **Proposed split, not yet confirmed.** Each owner replies to confirm or swap, then updates this table.
+Alex builds the full code pipeline. Everyone else focuses on the report, checking results, and packaging. Each person replies to confirm or swap, then updates this table.
 
 | Person | Workstream | Delivers | Due |
 | --- | --- | --- | --- |
-| Katya Serechenko | Crash data | Download, cleaning, label, crash features | Nov 25 |
-| Jaliah Meade | Weather | NOAA download, crash–weather join, match-rate table | Nov 28 |
-| Sid Nguyen | Report and packaging | Report sections 1–3, README, clean-machine run, zip | Dec 1 / Dec 2 |
-| Alexander Hsieh (Alex) | Modeling and pipeline | `run_all.py`, `config.py`, all models, tuning, evaluation, figures | Nov 29 |
+| Alexander Hsieh (Alex) | Full pipeline | Crash download and cleaning, weather join, label and features, all models, tuning, evaluation, figures and tables, `run_all.py`, `config.py` | Nov 29 |
+| Katya Serechenko | Report sections 1–2 | Introduction and applications, literature survey (~1.75 pages), starting from the proposal | Dec 1 |
+| Jaliah Meade | Report section 3 + results check | Methodology (~1.5 pages); review data and results tables as they land in the repo and flag anything that looks off | Dec 1 |
+| Sid Nguyen | Packaging | README, test run on a clean machine, final zip | Dec 2 |
+| Everyone | Report sections 5–6 | Once results freeze (Nov 29): results discussion and conclusion | Dec 1 |
 
-**Everyone** writes the report paragraph for their own part and adds problems and assumptions to the log in section 11.
+Alex writes section 4 (implementation) from the log in section 11. **Anyone** who hits a problem or makes an assumption adds it to that log.
 
 **Thanksgiving availability:** _each person fill in which days you're reachable._
 
@@ -75,7 +76,7 @@ We predict how severe a traffic crash is in Hillsborough County, FL, using FDOT 
 | Role | Fields |
 | --- | --- |
 | Label | `INJSEVER` |
-| Time and place | `CRASH_DATE`, `CRASH_TIME`, `CALENDAR_YEAR`, `COUNTY_TXT`, plus three coordinate sets (officer-reported, FDOT-verified, basemap-snapped). _Exact coordinate field names: TODO, Katya to fill in_ |
+| Time and place | `CRASH_DATE`, `CRASH_TIME`, `CALENDAR_YEAR`, `COUNTY_TXT`, plus three coordinate sets (officer-reported, FDOT-verified, basemap-snapped). _Exact coordinate field names: TODO, Alex to fill in_ |
 | Conditions | `LGHT_COND_CD` (lighting), `EVNT_WTHR_COND_CD` (officer-reported weather), `RD_SRFC_COND_CD` (road surface) |
 | Roadway | `SPEED_LIMIT`, `FUNCLASS`, `CNTOFLANES`, `GEO_URBAN_RURAL_IND`, `INTERSECTION_IND`, `IMPCT_TYP_CD` (manner of collision) |
 | Traffic | `AVERAGE_DAILY_TRAFFIC` (probably empty off the state highway system; check the missing rate) |
@@ -87,7 +88,7 @@ We predict how severe a traffic crash is in Hillsborough County, FL, using FDOT 
 - **Station list:** [ghcnh-station-list.txt](https://www.ncei.noaa.gov/oa/global-historical-climatology-network/hourly/doc/ghcnh-station-list.txt)
 - **Docs:** [ghcnh_DOCUMENTATION.pdf](https://www.ncei.noaa.gov/oa/global-historical-climatology-network/hourly/doc/ghcnh_DOCUMENTATION.pdf)
 - **Known:** visibility is in km
-- **TODO (Jaliah):** confirm the Tampa International station ID, the exact column names, that timestamps are UTC, and coverage for 2014–2018
+- **TODO (Alex):** confirm the Tampa International station ID, the exact column names, that timestamps are UTC, and coverage for 2014–2018
 
 ### Traffic count sites (FDOT), not used, see D4
 
@@ -175,7 +176,8 @@ outputs/
 - Target runtime: under about 15 minutes.
 
 **Git workflow:**
-- Work on a branch, open a PR to `main`, and get one teammate to look before merging.
+- Until the Nov 29 freeze, Alex pushes pipeline code straight to `main` to keep moving. Jaliah reviews the results as they land.
+- Everyone else works on a branch and opens a PR to `main`.
 - Never commit raw data or large files. Each stage writes its own checkpoint.
 
 ---
@@ -187,12 +189,12 @@ outputs/
 
 | Section | Pages | Owner |
 | --- | --- | --- |
-| 1. Introduction and applications | 0.75 | Sid |
-| 2. Literature survey | 1 | Sid |
-| 3. Methodology | 1.5 | Sid + Alex |
-| 4. Implementation (data access, joins, problems, assumptions) | 1.25 | Everyone, from the log below |
-| 5. Experimental results | 2.75 | Alex |
-| 6. Conclusion and future work | 0.5 | Written last |
+| 1. Introduction and applications | 0.75 | Katya |
+| 2. Literature survey | 1 | Katya |
+| 3. Methodology | 1.5 | Jaliah |
+| 4. Implementation (data access, joins, problems, assumptions) | 1.25 | Alex, from the log below |
+| 5. Experimental results | 2.75 | Alex (tables and figures) + everyone (discussion) |
+| 6. Conclusion and future work | 0.5 | Everyone, written last |
 
 - Code must run end to end from one command, with progress messages and an estimated completion time
 - README with run instructions and the libraries used
@@ -218,10 +220,10 @@ outputs/
 
 ## 12. Open questions
 
-- [ ] Exact coordinate field names in the crash layer (Katya)
-- [ ] Missing rate of `AVERAGE_DAILY_TRAFFIC` in Hillsborough (Katya)
-- [ ] Tampa International GHCNh station ID, column names, UTC check, 2014–2018 coverage (Jaliah)
-- [ ] Verify fixed-EST crash times on a few known crashes, e.g. Hurricane Irma, Sept 10–11, 2017 should show heavy rain and wind (Jaliah)
+- [ ] Exact coordinate field names in the crash layer (Alex)
+- [ ] Missing rate of `AVERAGE_DAILY_TRAFFIC` in Hillsborough (Alex)
+- [ ] Tampa International GHCNh station ID, column names, UTC check, 2014–2018 coverage (Alex)
+- [ ] Verify fixed-EST crash times on a few known crashes, e.g. Hurricane Irma, Sept 10–11, 2017 should show heavy rain and wind (Alex, Jaliah double-checks)
 - [ ] Python and scikit-learn versions everyone uses (Alex picks and pins them in `requirements.txt`)
 - [ ] Canvas zip size limit, which decides whether processed data ships in the zip (Sid)
 - [ ] Everyone confirms their workstream and Thanksgiving availability
