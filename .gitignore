@@ -1,0 +1,24 @@
+# Data is downloaded by stage 1, never committed
+data/
+*.parquet
+*.csv
+*.psv
+
+# Trained models (best_params.json is kept so the default run reproduces)
+outputs/models/*
+!outputs/models/best_params.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# OS / editors
+.DS_Store
+.vscode/
+.idea/
+
+# Result tables are small and belong in the repo
+!outputs/tables/*.csv
