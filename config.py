@@ -28,6 +28,8 @@ WEATHER_URL = ("https://noaa-ghcnh-pds.s3.amazonaws.com/hourly/access/by-year/"
 WEATHER_RAW_PATTERN = "ghcnh_{station}_{year}.parquet"
 WEATHER_HOURLY = DATA_INTERIM / "weather_hourly.parquet"
 CRASHES_JOINED = DATA_INTERIM / "crashes_joined.parquet"
+MODEL_TABLE = DATA_PROCESSED / "model_table.parquet"
+BEST_PARAMS = OUT_MODELS / "best_params.json"
 
 # --- Study scope (KNOWLEDGE.md decisions D1 and D3) --------------------------
 YEARS = [2014, 2015, 2016, 2017, 2018]
@@ -100,8 +102,8 @@ FEATURE_GROUPS = {
     "time": ["hour", "day_of_week", "month", "is_weekend", "LGHT_COND_CD"],
     "weather": [
         "EVNT_WTHR_COND_CD", "RD_SRFC_COND_CD",
-        "wx_temp_c", "wx_precip_mm", "wx_visibility_km", "wx_wind_ms",
-        "wx_rel_humidity", "wx_missing",
+        "wx_temp_c", "wx_precip_mm", "wx_precip_3h_mm", "wx_visibility_km",
+        "wx_wind_ms", "wx_rel_humidity", "wx_missing",
     ],
     "traffic": ["AVERAGE_DAILY_TRAFFIC", "adt_missing"],
 }

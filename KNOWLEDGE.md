@@ -62,6 +62,8 @@ Alex writes section 4 (implementation) from the log in section 11. **Anyone** wh
 | D9 | **Crash data is downloaded once from a browser** with `tools/fdot_browser_download.js`, then read from `data/raw/` | gis.fdot.gov now blocks scripts (Python, curl) with a bot check. The county's public copy lacks crash times and speed limits | Nov 24 |
 | D10 | **The data ships with the submission** (processed tables in the zip, or a download link if it's too big) | The instructor's machine can't download from FDOT either, so stage 1 can't fetch crash data automatically | Nov 24 |
 | D11 | Python 3.14 with the versions pinned in `requirements.txt` | Tested setup; everyone uses the same versions | Nov 24 |
+| D12 | **Noise check = bootstrap of the 2018 crashes** (200 resamples), not 3 seeds. Ablation gains use a paired bootstrap | Gradient boosting without early stopping is deterministic, so other seeds give identical scores and a spread of zero | Nov 25 |
+| D13 | Report random forest's win on macro-F1 honestly; keep gradient boosting as the planned primary model and discuss the severe-recall trade-off | Early stopping on macro-F1 and a lower learning rate were tested: same ~0.40, so it isn't a tuning bug. The plan says not to tune until results change | Nov 25 |
 
 ---
 
@@ -156,6 +158,33 @@ Built from `INJSEVER` ("Highest Injury in Crash").
 
 ---
 
+## 8b. Results so far (Nov 25, not frozen until Nov 29)
+
+All numbers come from `python run_all.py` and live in `outputs/tables/`. Figures are in `outputs/figures/`. **Copy numbers from those files, not from here**, in case they change before the freeze.
+
+**Test year 2018** (26,438 crashes, scored once; 95% bootstrap range in brackets), from `table3_test_metrics.csv`:
+
+| Model | Macro-F1 | Accuracy | Severe recall |
+| --- | --- | --- | --- |
+| Majority class (floor) | 0.234 | 54.0% | 0% |
+| Logistic regression | 0.361 | 41.1% | 61.7% |
+| Decision tree (depth 12) | 0.352 | 41.2% | 51.4% |
+| **Random forest** (300 trees, leaf 5) | **0.423** [0.413, 0.431] | 54.0% | 14.4% |
+| Gradient boosting (primary) | 0.390 [0.384, 0.396] | 45.8% | **51.7%** |
+
+**Key findings for the report:**
+1. Every model clearly beats the majority-class floor, but severity is hard to predict: macro-F1 tops out around 0.4.
+2. **Random forest has the best macro-F1 but misses most severe crashes** (14% recall). **Gradient boosting catches half of the severe crashes** at a lower macro-F1. This trade-off is the main discussion point.
+3. Weighting severe crashes more trades macro-F1 for severe recall (on 2017: ×1 → 0.40 / 45%, ×8 → 0.24 / 83%; `severe_weight_choice.csv`). ×1 was chosen because it maximizes macro-F1.
+4. **Top features** (permutation importance, `permutation_importance.csv`): manner of collision, road functional class, speed limit, traffic control, latitude. No single feature dominates enough to suggest leakage.
+5. **Ablation** (gradient boosting, `table4_ablation.csv` and `table4b_ablation_gains.csv`): roadway alone 0.377 → + time 0.382 → + weather 0.390 → + traffic 0.390. Paired bootstrap: **time (+0.006) and weather (+0.007) give small but measurable gains; traffic volume gives none** (−0.000, range −0.005 to +0.004). Road class and speed limit likely already carry the traffic signal.
+
+**Validation macro-F1** (2015 / 2016 / 2017, `validation_scores.csv`): random forest 0.42 / 0.42 / 0.42, gradient boosting 0.41 / 0.40 / 0.40, logistic regression 0.37 on each year.
+
+**Runtime:** 51 seconds for `python run_all.py`, about 6 minutes with `--tune` (12-core laptop).
+
+---
+
 ## 9. Code layout and run contract
 
 ```
@@ -224,6 +253,8 @@ outputs/
 | Oct 9 | Team | Fatal crashes too rare to model alone | Merged with incapacitating into "severe" (D2) |
 | Nov 24 | Alex | Hourly traffic bulk download never confirmed | Use `AVERAGE_DAILY_TRAFFIC` from the crash record (D4) |
 | Nov 24 | Alex | Downloaded data: 2014 24,621 / 2015 27,914 / 2016 30,457 / 2017 29,758 crashes. 2017 exactly matches the Oct 9 check (56.6% / 39.2% / 4.2%) | Download and label mapping confirmed correct |
+| Nov 25 | Alex | Gradient boosting stopped at ~40 rounds and scored below random forest | Tried early stopping on macro-F1 and learning rate 0.05: no change (~0.40). Kept as a real result (D13) |
+| Nov 25 | Alex | Plan's 3-seed noise check would show zero spread (deterministic model) | Replaced with bootstrap intervals (D12) |
 | Nov 24 | Alex | 2018 has 26,812 crashes, ~10% fewer than 2017, spread evenly across all 12 months (no missing month). After cleaning, 2014–2018 = 139,357 crashes, 137,393 with a usable label | Accept as is; note in the report |
 | Nov 24 | Alex | Weather join: 99.9–100% match rate. Irma (Sept 10–11, 2017): 71 crashes, mean wind 8.6 m/s, up to 11.4 mm rain/hour | Join works |
 | Nov 24 | Alex | 197 crashes appear twice with the same crash ID (`XID`) but different OBJECTIDs | Keep the first copy per `XID` |

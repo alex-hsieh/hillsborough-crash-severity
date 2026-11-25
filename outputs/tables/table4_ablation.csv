@@ -1,0 +1,5 @@
+step,n_features,macro_f1,macro_f1_ci_low,macro_f1_ci_high,severe_recall
+roadway,16,0.3768,0.3717,0.3827,0.538
+roadway + time,21,0.3824,0.3771,0.3879,0.5175
+roadway + time + weather,30,0.3897,0.3844,0.3958,0.5103
+roadway + time + weather + traffic,32,0.3895,0.3842,0.3962,0.5166

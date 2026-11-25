@@ -1,0 +1,17 @@
+{
+  "decision_tree": {
+    "max_depth": 12
+  },
+  "random_forest": {
+    "min_samples_leaf": 5
+  },
+  "gradient_boosting": {
+    "learning_rate": 0.18330974783826226,
+    "max_leaf_nodes": 72,
+    "max_depth": null,
+    "min_samples_leaf": 171,
+    "l2_regularization": 3.7079802423258124,
+    "severe_mult": 1,
+    "n_iter": 41
+  }
+}

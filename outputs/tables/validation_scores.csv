@@ -1,0 +1,6 @@
+model,2015,2016,2017
+Majority class,0.2369,0.2404,0.2409
+Logistic regression,0.3666,0.3664,0.368
+Decision tree,0.3327,0.358,0.3549
+Random forest,0.4218,0.4204,0.4219
+Gradient boosting,0.4072,0.398,0.3976

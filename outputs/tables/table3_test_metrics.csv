@@ -1,0 +1,6 @@
+model,macro_f1,macro_f1_ci_low,macro_f1_ci_high,accuracy,ordinal_mae,precision_No injury,recall_No injury,precision_Injury,recall_Injury,precision_Severe,recall_Severe
+Majority class,0.2337,0.2321,0.2352,0.5396,0.5026,0.5396,1.0,0.0,0.0,0.0,0.0
+Logistic regression,0.3606,0.3545,0.3659,0.4113,0.7414,0.6462,0.372,0.477,0.4413,0.0861,0.6168
+Decision tree,0.3519,0.3465,0.3587,0.412,0.7232,0.6516,0.2964,0.465,0.5509,0.0838,0.5139
+Random forest,0.4226,0.4133,0.4305,0.5404,0.4892,0.5941,0.6205,0.4856,0.4771,0.2375,0.1441
+Gradient boosting,0.3895,0.384,0.3959,0.4584,0.6468,0.6286,0.4539,0.4772,0.4583,0.1045,0.5166
