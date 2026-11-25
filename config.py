@@ -36,11 +36,17 @@ CV_FOLDS = [
 SEED = 42
 NOISE_CHECK_SEEDS = [42, 7, 2026]
 
-# --- Time zone (decision D6) -------------------------------------------------
-# FDOT crash dates use a fixed Eastern Standard Time reference with NO
-# daylight saving, so local -> UTC is always +5 hours.
-# Do NOT use "America/New_York", which applies DST.
-CRASH_UTC_OFFSET_HOURS = -5
+# --- Time zone (decision D6, revised Nov 24 after checking the real data) ----
+# CRASH_DATE is stored as midnight in fixed EST (always 05:00 UTC, all year),
+# so the calendar date is recovered by shifting it by -5 hours.
+# CRASH_TIME is a separate "HHMM" string: the officer's local wall-clock time,
+# which DOES follow daylight saving. So date + time is a local wall-clock time,
+# converted to UTC with America/New_York.
+CRASH_DATE_UTC_OFFSET_HOURS = -5
+LOCAL_TZ = "America/New_York"
+# Daylight-saving edge cases: the repeated 1 am hour in November is read as the
+# first (daylight) occurrence; the skipped 2 am hour in March is shifted forward.
+DST_AMBIGUOUS_AS_DAYLIGHT = True
 
 # --- Label (decision D2) -----------------------------------------------------
 # INJSEVER code -> class. Codes not listed (0 unknown, 6 non-traffic) are dropped.
@@ -77,6 +83,10 @@ FEATURE_GROUPS = {
         # Extra roadway fields found on the real layer (Nov 24):
         "RDWY_ALIGN_CD", "RDWY_GRDE_CD", "TRAF_WAY_CD", "JCT_CD",
         "V1TRAFCTL", "RCI_MEDIAN_WIDTH_FT", "RCI_SURFACE_WIDTH_FT",
+        # Road system (interstate/US/state/county/local). Always filled, and it
+        # explains why speed limit, lanes and ADT are missing on ~half the rows:
+        # FDOT inventories only state-maintained roads.
+        "DHSRDSYS",
     ],
     "time": ["hour", "day_of_week", "month", "is_weekend", "LGHT_COND_CD"],
     "weather": [
@@ -93,6 +103,7 @@ CATEGORICAL_FEATURES = [
     "FUNCLASS", "GEO_URBAN_RURAL_IND", "INTERSECTION_IND", "IMPCT_TYP_CD",
     "LGHT_COND_CD", "EVNT_WTHR_COND_CD", "RD_SRFC_COND_CD",
     "RDWY_ALIGN_CD", "RDWY_GRDE_CD", "TRAF_WAY_CD", "JCT_CD", "V1TRAFCTL",
+    "DHSRDSYS",
 ]
 
 # Crash time is a separate 4-character "HHMM" string next to CRASH_DATE.

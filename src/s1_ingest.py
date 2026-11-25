@@ -40,12 +40,7 @@ def load_year(year: int) -> pd.DataFrame:
 
 
 def convert_dates(df: pd.DataFrame, meta: dict) -> pd.DataFrame:
-    """Turn ArcGIS date fields (milliseconds since 1970) into pandas datetimes.
-
-    The values are kept exactly as the server returned them (no time zone
-    shift). The EST-versus-UTC decision (KNOWLEDGE.md D6) is applied later,
-    once the timestamp convention has been checked against known crashes.
-    """
+    """Turn ArcGIS date fields (milliseconds since 1970, UTC) into pandas datetimes."""
     date_fields = [f["name"] for f in meta["fields"] if f["type"] == "esriFieldTypeDate"]
     for col in date_fields:
         if col in df.columns:
@@ -53,10 +48,38 @@ def convert_dates(df: pd.DataFrame, meta: dict) -> pd.DataFrame:
     return df
 
 
+def build_timestamps(df: pd.DataFrame) -> pd.DataFrame:
+    """Add crash_local (wall-clock) and crash_utc columns. See config D6 notes.
+
+    CRASH_DATE is midnight fixed-EST expressed in UTC, so shifting it by
+    -5 hours gives the calendar date. CRASH_TIME ("HHMM") is local clock time.
+    """
+    day = (df[config.CRASH_DATE_FIELD] + pd.Timedelta(hours=config.CRASH_DATE_UTC_OFFSET_HOURS)).dt.normalize()
+    hhmm = df[config.CRASH_TIME_FIELD].fillna("").str.zfill(4)
+    hours = pd.to_numeric(hhmm.str[:2], errors="coerce")
+    minutes = pd.to_numeric(hhmm.str[2:], errors="coerce")
+    valid = hours.between(0, 23) & minutes.between(0, 59)
+    df["time_missing"] = (~valid).astype("int8")
+
+    local = day + pd.to_timedelta(hours.where(valid), unit="h") + pd.to_timedelta(minutes.where(valid), unit="m")
+    df["crash_local"] = local
+    df["crash_utc"] = (
+        local.dt.tz_localize(config.LOCAL_TZ, ambiguous=config.DST_AMBIGUOUS_AS_DAYLIGHT,
+                             nonexistent="shift_forward")
+        .dt.tz_convert("UTC")
+    )
+    log(f"  built timestamps; {int((~valid).sum()):,} crashes have no usable crash time")
+    return df
+
+
 def drop_bad_rows(df: pd.DataFrame) -> pd.DataFrame:
-    """Remove exact duplicates and crashes with missing or out-of-county coordinates."""
+    """Remove repeated crash IDs and crashes with missing or out-of-county coordinates.
+
+    Some crashes appear twice with different OBJECTIDs but the same crash ID
+    (XID); only the first copy is kept.
+    """
     n0 = len(df)
-    df = df.drop_duplicates()
+    df = df.drop_duplicates(subset="XID", keep="first")
     n_dup = n0 - len(df)
 
     box = config.COUNTY_BBOX
@@ -66,7 +89,7 @@ def drop_bad_rows(df: pd.DataFrame) -> pd.DataFrame:
     df = df[inside].copy()
     df = df.rename(columns={"lat_wgs84": "lat", "lon_wgs84": "lon"})
 
-    log(f"  dropped {n_dup:,} duplicate rows and {n_coord:,} rows with missing/out-of-county coordinates")
+    log(f"  dropped {n_dup:,} repeated crash IDs and {n_coord:,} rows with missing/out-of-county coordinates")
     return df
 
 
@@ -89,6 +112,7 @@ def run() -> pd.DataFrame:
     log(f"  {len(df):,} crashes loaded in total")
     df = convert_dates(df, meta)
     df = drop_bad_rows(df)
+    df = build_timestamps(df)
 
     missing_table(df).to_csv(config.OUT_TABLES / "table1_crash_missing.csv", index=False)
     df.to_parquet(config.CRASHES_CLEAN, index=False)

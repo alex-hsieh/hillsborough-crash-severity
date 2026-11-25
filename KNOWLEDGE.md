@@ -56,7 +56,7 @@ Alex writes section 4 (implementation) from the log in section 11. **Anyone** wh
 | D3 | Train 2014–2017, test 2018 exactly once | Time-based split, so no future data leaks into training | Oct 9 |
 | D4 | **Traffic = `AVERAGE_DAILY_TRAFFIC` field from the crash record.** No hourly traffic counts | The hourly bulk download was never confirmed; this field needs no download or join | Nov 24 |
 | D5 | **Weather = Tampa International Airport station only.** Add more stations only if time allows | One station keeps the join simple; still needs a check for 2014–2018 coverage | Nov 24 |
-| D6 | **Crash times are fixed EST with NO daylight saving.** Do NOT use `America/New_York` | FDOT layer metadata says so. Applying DST shifts summer crashes by an hour against the weather | Oct 9 (overrides the Nov 16 plan) |
+| D6 | **Revised Nov 24 after checking the real data.** `CRASH_DATE` is stored as midnight in fixed EST (always 05:00 UTC, all year), so shift it by −5 h to get the calendar date. `CRASH_TIME` ("HHMM") is the officer's local wall-clock time, which **does** follow daylight saving. Date + time = local time, converted to UTC with `America/New_York`. Repeated 1 am in November = daylight occurrence; skipped 2 am in March = shifted forward | The Oct 9 "fixed EST" finding is true of the date field only. Applying a fixed −5 h to the clock time would shift every summer crash by an hour. To be confirmed with the weather join (rain reports should line up with NOAA rain hours) | Nov 24 (replaces the Oct 9 version) |
 | D7 | Stretch goals (weather vs. traffic volume; unusual-volume detection) only if core results freeze by Nov 29 | Not enough time otherwise | Nov 16 |
 | D8 | Libraries limited to pandas, numpy, scikit-learn, pyarrow, requests, matplotlib | Every extra library is one more thing the instructor must install | Nov 16 |
 | D9 | **Crash data is downloaded once from a browser** with `tools/fdot_browser_download.js`, then read from `data/raw/` | gis.fdot.gov now blocks scripts (Python, curl) with a bot check. The county's public copy lacks crash times and speed limits | Nov 24 |
@@ -220,6 +220,11 @@ outputs/
 | Oct 9 | Team | Crash date fields use fixed EST, no DST | Convert with a fixed UTC−5 offset, not `America/New_York` (D6). _TODO: verify on a few known crash times_ |
 | Oct 9 | Team | Fatal crashes too rare to model alone | Merged with incapacitating into "severe" (D2) |
 | Nov 24 | Alex | Hourly traffic bulk download never confirmed | Use `AVERAGE_DAILY_TRAFFIC` from the crash record (D4) |
+| Nov 24 | Alex | Downloaded data: 2014 24,621 / 2015 27,914 / 2016 30,457 / 2017 29,758 crashes. 2017 exactly matches the Oct 9 check (56.6% / 39.2% / 4.2%) | Download and label mapping confirmed correct |
+| Nov 24 | Alex | 197 crashes appear twice with the same crash ID (`XID`) but different OBJECTIDs | Keep the first copy per `XID` |
+| Nov 24 | Alex | 1,596 crashes (1.4%) have `INJSEVER` 0 (unknown) or 6 (non-traffic) | Dropped from modeling, as planned |
+| Nov 24 | Alex | Speed limit, functional class, lanes, median and surface width, urban/rural and ADT are 46–54% missing. They come from FDOT's roadway inventory, which covers state-maintained roads only: ADT is 1–6% missing on interstate/US/state roads, but 61–88% missing on county and local roads | Keep them with gradient boosting's native missing handling; add road system (`DHSRDSYS`, always filled) as a feature; state this limitation in the report |
+| Nov 24 | Alex | Severe share drifts down: 5.8% (2014), 4.6%, 4.2%, 4.2% (2017). 2014 also has ~20% fewer crashes | Possibly the 2014 coding shift; the time-ordered split handles it; mention in the report |
 | Nov 24 | Alex | gis.fdot.gov returns an Azure bot-check page to scripts. ArcGIS Hub has no export of `Crashes_All`. Hillsborough County's public copy (Signal Four, 244k crashes 2011–2023) has dates without times and no speed limit, lane count or traffic volume | Download from a browser tab with `tools/fdot_browser_download.js` (D9); ship the data with the code (D10) |
 
 ---
