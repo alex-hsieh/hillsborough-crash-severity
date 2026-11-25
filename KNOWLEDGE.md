@@ -59,6 +59,9 @@ Alex writes section 4 (implementation) from the log in section 11. **Anyone** wh
 | D6 | **Crash times are fixed EST with NO daylight saving.** Do NOT use `America/New_York` | FDOT layer metadata says so. Applying DST shifts summer crashes by an hour against the weather | Oct 9 (overrides the Nov 16 plan) |
 | D7 | Stretch goals (weather vs. traffic volume; unusual-volume detection) only if core results freeze by Nov 29 | Not enough time otherwise | Nov 16 |
 | D8 | Libraries limited to pandas, numpy, scikit-learn, pyarrow, requests, matplotlib | Every extra library is one more thing the instructor must install | Nov 16 |
+| D9 | **Crash data is downloaded once from a browser** with `tools/fdot_browser_download.js`, then read from `data/raw/` | gis.fdot.gov now blocks scripts (Python, curl) with a bot check. The county's public copy lacks crash times and speed limits | Nov 24 |
+| D10 | **The data ships with the submission** (processed tables in the zip, or a download link if it's too big) | The instructor's machine can't download from FDOT either, so stage 1 can't fetch crash data automatically | Nov 24 |
+| D11 | Python 3.14 with the versions pinned in `requirements.txt` | Tested setup; everyone uses the same versions | Nov 24 |
 
 ---
 
@@ -215,6 +218,7 @@ outputs/
 | Oct 9 | Team | Crash date fields use fixed EST, no DST | Convert with a fixed UTC−5 offset, not `America/New_York` (D6). _TODO: verify on a few known crash times_ |
 | Oct 9 | Team | Fatal crashes too rare to model alone | Merged with incapacitating into "severe" (D2) |
 | Nov 24 | Alex | Hourly traffic bulk download never confirmed | Use `AVERAGE_DAILY_TRAFFIC` from the crash record (D4) |
+| Nov 24 | Alex | gis.fdot.gov returns an Azure bot-check page to scripts. ArcGIS Hub has no export of `Crashes_All`. Hillsborough County's public copy (Signal Four, 244k crashes 2011–2023) has dates without times and no speed limit, lane count or traffic volume | Download from a browser tab with `tools/fdot_browser_download.js` (D9); ship the data with the code (D10) |
 
 ---
 
@@ -224,8 +228,9 @@ outputs/
 - [ ] Missing rate of `AVERAGE_DAILY_TRAFFIC` in Hillsborough (Alex)
 - [ ] Tampa International GHCNh station ID, column names, UTC check, 2014–2018 coverage (Alex)
 - [ ] Verify fixed-EST crash times on a few known crashes, e.g. Hurricane Irma, Sept 10–11, 2017 should show heavy rain and wind (Alex, Jaliah double-checks)
-- [ ] Python and scikit-learn versions everyone uses (Alex picks and pins them in `requirements.txt`)
-- [ ] Canvas zip size limit, which decides whether processed data ships in the zip (Sid)
+- [x] Python and library versions: Python 3.14, pinned in `requirements.txt` (D11)
+- [ ] Download the crash data with `tools/fdot_browser_download.js` and put the files in `data/raw/` (Alex)
+- [ ] **Canvas zip size limit.** Now important: the data must ship in the zip or by link (D10) (Sid)
 - [ ] Everyone confirms their workstream and Thanksgiving availability
 
 ---
