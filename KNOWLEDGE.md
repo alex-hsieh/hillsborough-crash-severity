@@ -78,8 +78,10 @@ Alex writes section 4 (implementation) from the log in section 11. **Anyone** wh
 
 | Role | Fields |
 | --- | --- |
-| Label | `INJSEVER` |
-| Time and place | `CRASH_DATE`, `CRASH_TIME`, `CALENDAR_YEAR`, `COUNTY_TXT`, plus three coordinate sets (officer-reported, FDOT-verified, basemap-snapped). _Exact coordinate field names: TODO, Alex to fill in_ |
+| Label | `INJSEVER` (a 1-character **string**: "1" to "6") |
+| Time and place | `CRASH_DATE` (date), `CRASH_TIME` ("HHMM" string), `CALENDAR_YEAR` (integer), `COUNTY_TXT`. Coordinates: `OFFICER_LATITUDE`/`OFFICER_LONGITUDE` (officer), `SAFETYLAT`/`SAFETYLON` (FDOT-verified), `LATITUDE`/`LONGITUDE` (basemap-snapped). The layer's native projection is UTM 17N (EPSG 26917); the download script also saves WGS84 `lon_wgs84`/`lat_wgs84` |
+| Roadway ID | `ROADWAYID` (FDOT roadway), `ON_ROADWAY_NAME`, `INT_ROADWAY_NAME` |
+| Extra roadway fields (added Nov 24) | `RDWY_ALIGN_CD` (alignment), `RDWY_GRDE_CD` (grade), `TRAF_WAY_CD` (traffic way), `JCT_CD` (relation to junction), `V1TRAFCTL` (traffic control), `RCI_MEDIAN_WIDTH_FT`, `RCI_SURFACE_WIDTH_FT` |
 | Conditions | `LGHT_COND_CD` (lighting), `EVNT_WTHR_COND_CD` (officer-reported weather), `RD_SRFC_COND_CD` (road surface) |
 | Roadway | `SPEED_LIMIT`, `FUNCLASS`, `CNTOFLANES`, `GEO_URBAN_RURAL_IND`, `INTERSECTION_IND`, `IMPCT_TYP_CD` (manner of collision) |
 | Traffic | `AVERAGE_DAILY_TRAFFIC` (probably empty off the state highway system; check the missing rate) |
@@ -125,7 +127,7 @@ Built from `INJSEVER` ("Highest Injury in Crash").
 | 3. Weather | NOAA temperature, precipitation, visibility, wind speed, humidity, missing flags; officer-reported `EVNT_WTHR_COND_CD`, `RD_SRFC_COND_CD` _(TODO: confirm they belong in this group)_ |
 | 4. Traffic | `AVERAGE_DAILY_TRAFFIC` + missing flag |
 
-**Never use these as features (leakage deny list):** `NUMBER_OF_INJURED`, `NUMBER_OF_KILLED`, `NUMBER_OF_SERIOUS_INJURIES`, `TOTAL_PERSONS`, and every pre-built indicator flag. The training code asserts that none of them is in the feature list.
+**Never use these as features (leakage deny list):** `NUMBER_OF_INJURED`, `NUMBER_OF_KILLED`, `NUMBER_OF_SERIOUS_INJURIES`, `TOTAL_PERSONS`, and FDOT's pre-built behaviour flags (`NO_BELT_*`, `IMPAIRED_*`, `SPEEDING_*`, `AGGRESSIVE_*`, `DISTRACTED_*`, `ALCINVCD`, `WRONGWAY_IND`, `LANE_DEPARTURE_IND`, `CRASH_CLASS_IND_MC`). `config.is_denied()` enforces this, and the training code asserts that no feature is denied. `INTERSECTION_IND` and `GEO_URBAN_RURAL_IND` describe the location, so they're allowed.
 
 **Other rules:**
 - Anything learned from data (imputation values, category lists) is fit on training years only.
@@ -224,7 +226,7 @@ outputs/
 
 ## 12. Open questions
 
-- [ ] Exact coordinate field names in the crash layer (Alex)
+- [x] Exact coordinate field names in the crash layer (section 5)
 - [ ] Missing rate of `AVERAGE_DAILY_TRAFFIC` in Hillsborough (Alex)
 - [ ] Tampa International GHCNh station ID, column names, UTC check, 2014–2018 coverage (Alex)
 - [ ] Verify fixed-EST crash times on a few known crashes, e.g. Hurricane Irma, Sept 10–11, 2017 should show heavy rain and wind (Alex, Jaliah double-checks)

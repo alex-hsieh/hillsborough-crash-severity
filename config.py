@@ -45,7 +45,8 @@ CRASH_UTC_OFFSET_HOURS = -5
 # --- Label (decision D2) -----------------------------------------------------
 # INJSEVER code -> class. Codes not listed (0 unknown, 6 non-traffic) are dropped.
 LABEL_FIELD = "INJSEVER"
-LABEL_MAP = {1: 0, 2: 1, 3: 1, 4: 2, 5: 2}
+# INJSEVER is a one-character string field on the FDOT layer.
+LABEL_MAP = {"1": 0, "2": 1, "3": 1, "4": 2, "5": 2}
 CLASS_NAMES = ["No injury", "Injury", "Severe"]
 
 # --- Leakage deny list -------------------------------------------------------
@@ -58,9 +59,14 @@ DENY_EXACT = {
     "NUMBER_OF_SERIOUS_INJURIES",
     "TOTAL_PERSONS",
 }
-# Any column containing one of these substrings is also denied
-# (catches pre-built indicator flags such as fatality or injury flags).
-DENY_SUBSTRINGS = ("INJ", "FATAL", "KILL", "DEATH")
+# Any column containing one of these substrings is also denied. This catches
+# outcome fields plus FDOT's pre-built behaviour flags (seat belt, impairment,
+# speeding...), which are coded after the investigation.
+DENY_SUBSTRINGS = (
+    "INJ", "FATAL", "KILL", "DEATH",
+    "NO_BELT", "IMPAIRED", "SPEEDING", "AGGRESSIVE", "DISTRACTED",
+    "ALCINV", "WRONGWAY", "LANE_DEPARTURE", "CRASH_CLASS",
+)
 
 # --- Feature groups (also the ablation steps, in order) ----------------------
 # Names refer to columns produced by s3_features.py.
@@ -68,6 +74,9 @@ FEATURE_GROUPS = {
     "roadway": [
         "SPEED_LIMIT", "FUNCLASS", "CNTOFLANES", "GEO_URBAN_RURAL_IND",
         "INTERSECTION_IND", "IMPCT_TYP_CD", "lat", "lon",
+        # Extra roadway fields found on the real layer (Nov 24):
+        "RDWY_ALIGN_CD", "RDWY_GRDE_CD", "TRAF_WAY_CD", "JCT_CD",
+        "V1TRAFCTL", "RCI_MEDIAN_WIDTH_FT", "RCI_SURFACE_WIDTH_FT",
     ],
     "time": ["hour", "day_of_week", "month", "is_weekend", "LGHT_COND_CD"],
     "weather": [
@@ -83,7 +92,12 @@ ABLATION_ORDER = ["roadway", "time", "weather", "traffic"]
 CATEGORICAL_FEATURES = [
     "FUNCLASS", "GEO_URBAN_RURAL_IND", "INTERSECTION_IND", "IMPCT_TYP_CD",
     "LGHT_COND_CD", "EVNT_WTHR_COND_CD", "RD_SRFC_COND_CD",
+    "RDWY_ALIGN_CD", "RDWY_GRDE_CD", "TRAF_WAY_CD", "JCT_CD", "V1TRAFCTL",
 ]
+
+# Crash time is a separate 4-character "HHMM" string next to CRASH_DATE.
+CRASH_DATE_FIELD = "CRASH_DATE"
+CRASH_TIME_FIELD = "CRASH_TIME"
 
 # --- Hillsborough County bounding box (rough, for dropping bad coordinates) --
 COUNTY_BBOX = {"lat_min": 27.55, "lat_max": 28.20, "lon_min": -82.85, "lon_max": -82.05}
