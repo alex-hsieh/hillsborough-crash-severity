@@ -237,11 +237,11 @@ outputs/
 ## 12. Open questions
 
 - [x] Exact coordinate field names in the crash layer (section 5)
-- [ ] Missing rate of `AVERAGE_DAILY_TRAFFIC` in Hillsborough (Alex)
-- [ ] Tampa International GHCNh station ID, column names, UTC check, 2014–2018 coverage (Alex)
-- [ ] Verify fixed-EST crash times on a few known crashes, e.g. Hurricane Irma, Sept 10–11, 2017 should show heavy rain and wind (Alex, Jaliah double-checks)
+- [x] Missing rate of `AVERAGE_DAILY_TRAFFIC`: 46.6% overall, 1–6% on state roads, 61–88% on county/local roads (section 11)
+- [x] Tampa International GHCNh station ID, column names, UTC check, 2014–2018 coverage (section 5)
+- [x] Time zone verified with the rain check, and the Irma spot check passes (D6). Jaliah can double-check `outputs/tables/timezone_check.csv`
 - [x] Python and library versions: Python 3.14, pinned in `requirements.txt` (D11)
-- [ ] Download the crash data with `tools/fdot_browser_download.js` and put the files in `data/raw/` (Alex)
+- [x] Crash data downloaded: 2014–2018, 139,562 rows
 - [ ] **Canvas zip size limit.** Now important: the data must ship in the zip or by link (D10) (Sid)
 - [ ] Everyone confirms their workstream and Thanksgiving availability
 
